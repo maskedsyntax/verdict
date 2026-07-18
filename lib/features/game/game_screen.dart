@@ -7,6 +7,7 @@ import 'package:verdict/features/game/game_controller.dart';
 import 'package:verdict/features/game/game_grid.dart';
 import 'package:verdict/features/game/game_keyboard.dart';
 import 'package:verdict/features/game/help_sheet.dart';
+import 'package:verdict/features/leaderboard/leaderboard_sheet.dart';
 import 'package:verdict/features/results/result_panel.dart';
 import 'package:verdict/features/settings/settings_sheet.dart';
 import 'package:verdict/features/stats/stats_sheet.dart';
@@ -60,8 +61,13 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                   _Header(
                     puzzleNumber: game.puzzle.number,
                     onHelp: () => _showSheet(context, const HelpSheet()),
-                    onStats: () =>
-                        _showSheet(context, StatsSheet(stats: game.stats)),
+                    onStats: () => _showSheet(
+                      context,
+                      StatsSheet(
+                        stats: game.stats,
+                        onLeaderboard: () => _openLeaderboard(context, game),
+                      ),
+                    ),
                     onSettings: () => _showSheet(
                       context,
                       SettingsSheet(
@@ -164,6 +170,17 @@ class _GameScreenState extends ConsumerState<GameScreen> {
         isScrollControlled: true,
         builder: (context) => child,
       );
+
+  Future<void> _openLeaderboard(
+    BuildContext context,
+    GameViewState game,
+  ) async {
+    Navigator.pop(context);
+    await Future<void>.delayed(Duration.zero);
+    if (mounted) {
+      await _showSheet(this.context, LeaderboardSheet(game: game));
+    }
+  }
 }
 
 class _Header extends StatelessWidget {

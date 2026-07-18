@@ -2,11 +2,13 @@ import 'package:verdict_engine/verdict_engine.dart';
 
 abstract interface class LeaderboardRepository {
   Future<List<LeaderboardEntry>> topScores(GameMode mode);
-  Future<void> submitAttempt(VerifiedAttempt attempt);
+  Future<int> submitAttempt(VerifiedAttempt attempt);
 }
 
 abstract interface class AuthService {
   Future<String> signInAnonymously();
+  Future<String?> currentUsername();
+  Future<String> claimUsername(String username);
 }
 
 abstract interface class EntitlementService {
@@ -81,11 +83,18 @@ class DisabledServices
   Future<void> showPostGameAd() async {}
 
   @override
+  Future<String> claimUsername(String username) =>
+      Future.error(StateError('Online services are disabled.'));
+
+  @override
+  Future<String?> currentUsername() async => null;
+
+  @override
   Future<String> signInAnonymously() =>
       Future.error(StateError('Online services are disabled.'));
 
   @override
-  Future<void> submitAttempt(VerifiedAttempt attempt) =>
+  Future<int> submitAttempt(VerifiedAttempt attempt) =>
       Future.error(StateError('Leaderboards are disabled.'));
 
   @override

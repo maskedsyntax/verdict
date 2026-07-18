@@ -4,9 +4,14 @@ import 'package:verdict/app/verdict_theme.dart';
 import 'package:verdict/features/stats/player_stats.dart';
 
 class StatsSheet extends StatelessWidget {
-  const StatsSheet({required this.stats, super.key});
+  const StatsSheet({
+    required this.stats,
+    required this.onLeaderboard,
+    super.key,
+  });
 
   final PlayerStats stats;
+  final VoidCallback onLeaderboard;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -56,6 +61,13 @@ class StatsSheet extends StatelessWidget {
                   (largest, value) => value > largest ? value : largest,
                 ),
               ),
+            const SizedBox(height: 18),
+            BrutalButton(
+              label: 'GLOBAL BOARD',
+              icon: Icons.emoji_events_outlined,
+              color: VerdictPalette.yellow,
+              onPressed: onLeaderboard,
+            ),
           ],
         ),
       ),

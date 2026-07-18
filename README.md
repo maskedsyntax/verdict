@@ -30,9 +30,12 @@ flutter run
 The framework-independent game engine is in `packages/verdict_engine`. Word
 asset provenance and generation details are in `assets/words/README.md`.
 
-## Roadmap Boundaries
+## Optional Leaderboard
 
-Online leaderboard, auth, ads, purchases, analytics, and notifications are not
-initialized in the offline MVP. Their contracts live in
-`lib/core/services/future_services.dart`; production SDKs and credentials will
-be added only when those phases are implemented.
+Supabase anonymous auth and the Classic top-10 leaderboard activate only when a
+URL and publishable key are supplied through `--dart-define`. See
+`supabase/README.md` for deployment and security details. Without those values,
+the same build remains offline-only.
+
+Ads, purchases, analytics, and notifications remain disabled behind contracts
+in `lib/core/services/future_services.dart` until their roadmap phases.
