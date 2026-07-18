@@ -1,0 +1,274 @@
+================================================================
+VERDICT — SPEC v1.0
+A daily word-guessing game with twist modes, Neubrutalism UI
+================================================================
+
+------------------------------------------------
+1. APP NAME
+------------------------------------------------
+Primary: VERDICT
+  - Real word, no coined portmanteau, no trademark collision with "Wordle."
+  - Thematically apt: every guess in the game IS a verdict — the colored
+    tiles are the game passing judgment on your word. This gives you a
+    natural voice for copy ("Deliver your verdict", "Verdict of the day",
+    streak copy like "7-day verdict streak") without forcing a gimmick.
+  - Domain check before locking in: verdict app / getverdict app /
+    verdictgame.com — check availability before final commit.
+
+Backup names (if Verdict domain/trademark search comes back dirty):
+  - HUNCH — real word, playful, fits the guess-and-learn loop.
+  - LEDGER — real word, fits the "record of daily attempts" angle,
+    pairs well with streak/stats framing.
+
+Tagline: "Six guesses. One verdict."
+
+------------------------------------------------
+2. CORE CONCEPT (MVP)
+------------------------------------------------
+Straight Wordle mechanics, no deviation for MVP:
+  - One secret 5-letter word per day, same word for all players (UTC-based
+    day boundary, matching the genre convention).
+  - 6 guess rows, on-screen keyboard shows used-letter state.
+  - Tile feedback: correct letter+position (green/"hit"), correct letter
+    wrong position (yellow/"near"), absent (gray/"miss") — reskinned in
+    Neubrutalism palette, see Section 7.
+  - Local dictionary validation (must be a real word to submit).
+  - One local device streak counter + local stats (games played, win %,
+    guess distribution) — no login required to play MVP.
+  - Share Result: copies an emoji grid (no letters, spoiler-safe) to
+    clipboard for the user to paste wherever they like. This is a
+    single-user, one-directional action (not a multiplayer feature) —
+    it doesn't require or display any other person's data.
+
+------------------------------------------------
+3. TWIST MODES (post-MVP, additive on top of the same core engine)
+------------------------------------------------
+All four are config variants of the same guess/validate/reveal engine —
+none require a new grading algorithm, a second dictionary system, or a
+backend change. That's the ceiling for "not too difficult to develop."
+
+  A. BLITZ
+     - 60-second countdown per puzzle. Timer pauses only on submit
+       animation. Faster solves = bonus points.
+     - Build cost: a Timer + a scoring multiplier. No new UI beyond a
+       countdown bar.
+
+  B. VAULT (hardcore/risk mode)
+     - Only 4 guesses instead of 6. Once a letter is marked "miss," its
+       keyboard key locks (greys out, can't be tapped again).
+     - Higher score multiplier as a reward for the added risk.
+     - Build cost: two flags on existing state (maxGuesses, lockMissedKeys).
+
+  C. TWIN
+     - Two secret words are active at once, shown as two stacked grids.
+       Every guess you type is submitted to both grids simultaneously,
+       but each grid grades independently. 7 guesses total to solve both.
+     - This is the one twist with real added UI work (dual grid layout,
+       dual keyboard-state merge — a key must show its state for whichever
+       grid is more "informative," i.e. green beats yellow beats gray when
+       merging two grids' feedback for the same key). Still a bounded,
+       well-understood problem (this is the same mechanic Dordle popularized).
+
+  D. SHIFT
+     - Word length varies by day (4–7 letters) instead of fixed at 5.
+       Guess count scales with length (4-letter = 5 guesses, 7-letter =
+       8 guesses).
+     - Build cost: parameterize grid width and guess count instead of
+       hardcoding 5-and-6. This is really a refactor of the MVP engine
+       to accept variable length, which then pays for itself here.
+
+Twist modes are unlocked via Section 4's monetization, and each has its
+own independent streak/leaderboard track (see Section 5) so they don't
+dilute the main daily leaderboard.
+
+------------------------------------------------
+4. MONETIZATION
+------------------------------------------------
+1) ADS
+   - Banner: none on the main puzzle screen (protects Neubrutalism layout
+     from banner-ad visual clutter) — banner only on the post-game results
+     screen and stats screen.
+   - Interstitial: shown at most once per session, after a completed game
+     (win or loss), never mid-guess.
+   - Rewarded video (opt-in, not forced): watch an ad to unlock one of —
+     a single letter reveal, an extra guess in VAULT mode, or a 24-hour
+     streak-freeze (protects streak if the player misses a day).
+
+2) NON-AD: VERDICT PRO (subscription, monthly/annual + a lifetime option)
+   - Removes all ads.
+   - Unlocks all twist modes (BLITZ / VAULT / TWIN / SHIFT) — free tier
+     gets MVP mode only, plus one twist mode "free rotation" per week to
+     let free users sample what they're missing.
+   - Unlimited hints (vs. 1 free hint every 3 days for free tier).
+   - Cosmetic tile/keyboard color palettes (still Neubrutalism-shaped,
+     different color combos — e.g., a Gruvbox palette, a high-contrast
+     palette) and an alternate "thin border" neubrutalist skin.
+   - Advanced stats (guess-letter heatmap, average solve time trend).
+   - Pricing to decide at build time; keep the free tier genuinely
+     playable forever (full MVP mode, no paywall on the core loop) —
+     paying only removes friction/ads and adds variety, never gates the
+     base game people came for.
+
+------------------------------------------------
+5. SOCIAL FEATURE — GLOBAL LEADERBOARD (single-player-safe)
+------------------------------------------------
+   - Top 10 global leaderboard per mode (MVP, Blitz, Vault, Twin, Shift),
+     showing username + current score only.
+   - No friends list, no direct messaging, no head-to-head — every
+     interaction is a solo player against a public high-score table,
+     which keeps this within "no features involving more than 1 person
+     at a time" while still giving competitive/social pull.
+   - Username is self-chosen at first submit, no email/personal info
+     required to appear on the board (pairs with anonymous auth below).
+   - Score formula: base points for solving + guesses-remaining bonus +
+     mode multiplier (Vault/Blitz score higher per solve than MVP).
+   - Anti-cheat baseline: score submission is a signed request from a
+     verified daily puzzle ID + server-side validated guess count/time,
+     not a client-supplied raw number — enough to stop trivial score
+     spoofing without building a full anti-cheat system.
+
+------------------------------------------------
+6. TARGET PLATFORMS
+------------------------------------------------
+   - Android (Play Store) and iOS (App Store), single Flutter codebase.
+   - Minimum targets: iOS 14+, Android 8.0+ (API 26+) — covers the vast
+     majority of active devices without carrying old-OS compatibility cost.
+   - Tablet layout as a stretch goal, not MVP (Neubrutalism grid scales
+     fine at phone width; wider layouts need a real pass).
+
+------------------------------------------------
+7. FLUTTER STACK
+------------------------------------------------
+Language/Framework
+   - Flutter 3.x (stable channel), Dart 3.x, null-safe.
+
+State management
+   - Riverpod (flutter_riverpod). Lightweight, no code-gen dependency
+     required (can skip riverpod_generator to avoid extra build-time
+     tooling), keeps game logic in plain Dart classes/notifiers rather
+     than behind a heavy framework.
+
+Core game engine
+   - Pure-Dart package (own folder, e.g. /packages/verdict_engine),
+     framework-agnostic: word validation, grading algorithm, scoring,
+     twist-mode config objects. Kept separate from UI so it's testable
+     in isolation and reusable if a web version is ever built.
+
+Local storage
+   - Hive (or shared_preferences for pure key-value, Hive if the stats
+     object grows) for: streak, stats, settings, cached username,
+     unlocked-hint balance.
+
+Backend (leaderboard + auth) — Supabase
+   - Chosen over Firebase because it's open-source/self-hostable
+     (Postgres underneath), which keeps you off a pure vendor-lock-in
+     stack and gives a real migration/export path if you ever want to
+     self-host later.
+   - Supabase Auth: anonymous sign-in on first launch (no email/password
+     friction), upgraded to a username-only public profile row when the
+     player first submits a leaderboard score.
+   - Supabase Postgres: `puzzles` table (daily word per mode, id, date),
+     `scores` table (user_id, mode, puzzle_id, score, submitted_at).
+   - Row-level security: scores are insert-only from the client, with a
+     Postgres function validating the score against puzzle_id + guess
+     count/time server-side before accepting the insert.
+
+Dictionary / word list
+   - Bundled as local JSON/txt assets (answer list + broader valid-guess
+     list, same two-list pattern as the genre standard). No network call
+     required to play offline.
+
+Ads
+   - google_mobile_ads (AdMob) — banner, interstitial, rewarded video.
+
+In-app purchases / subscription
+   - in_app_purchase (official Flutter/Google/Apple package) for direct
+     store billing — keeps purchase logic in your own code rather than
+     behind a third-party billing wrapper. Revisit RevenueCat only if
+     multi-platform entitlement sync becomes a real pain point at scale.
+
+Notifications
+   - flutter_local_notifications for the daily-reminder / streak-risk
+     push (local, scheduled — no push server needed for this feature).
+
+Analytics
+   - PostHog (open-source, self-hostable) over Firebase Analytics, for
+     the same ownership reasons as the Supabase choice.
+
+Animation / UI
+   - Neubrutalism is cheap to build in Flutter: thick solid borders
+     (Border.all(width: 3-4)), hard drop shadows (BoxShadow with 0 blur,
+     fixed offset instead of Flutter's default soft shadow), flat bold
+     fill colors, no gradients, chunky sans-serif type (e.g. Space
+     Grotesk / Archivo Black via google_fonts), and deliberately
+     "un-rounded" or minimally-rounded corners. Tile flip/reveal and
+     shake-on-invalid-word are simple AnimationController-driven
+     transforms — no animation package dependency needed.
+
+CI/CD
+   - GitHub Actions for test + build, Codemagic or Fastlane for store
+     signing/upload to TestFlight and Play Console internal track.
+
+------------------------------------------------
+8. POSITIONING & GROWTH STRATEGY
+------------------------------------------------
+Visual differentiation as the wedge
+   - Almost every Wordle clone uses the same flat, minimal, low-contrast
+     look. A confident Neubrutalism identity (thick borders, hard shadows,
+     saturated flat colors) is genuinely rare in this category and reads
+     well in store screenshots and TikTok/Reels clips at a glance —
+     that's the primary ASO/screenshot differentiator, lean into it hard
+     in the App Store/Play Store screenshot set and icon.
+
+Retention mechanics (built into MVP, not bolted on later)
+   - Daily streak + local notification reminder ("Your streak expires in
+     2 hours") is the single strongest retention lever in this genre —
+     ship it in the MVP, not as a v2 add-on.
+   - Spoiler-safe emoji-grid share result is the organic-growth engine
+     the whole genre runs on (Wordle's own growth was largely driven by
+     this) — make it one tap from the results screen.
+
+Launch channels
+   - Product Hunt launch timed with a working leaderboard + at least one
+     twist mode live (Blitz is the cheapest to demo well).
+   - Word-game-adjacent subreddits/communities and short-form video of
+     TWIN and VAULT mode specifically — those two demo best visually
+     because the risk/dual-grid mechanic is instantly legible in a
+     15-second clip, unlike MVP mode which looks like "just Wordle."
+   - Avoid using "Wordle" in App Store/Play Store metadata, keywords, or
+     ad copy — position via genre terms ("daily word puzzle," "word
+     guessing game," "brain game") instead, both for trademark safety
+     and because Apple/Google review teams flag copycat-naming patterns.
+
+Monetization-growth balance
+   - Keep MVP mode entirely free forever (no paywall on the core loop)
+     — the free/viral tier is what drives downloads and leaderboard
+     density; Pro converts engaged players who want variety (twist
+     modes) and convenience (no ads), not players trying to access the
+     base game.
+
+------------------------------------------------
+9. PHASED ROADMAP
+------------------------------------------------
+Phase 1 — MVP: core engine, MVP mode only, local stats/streak, share
+  result, Neubrutalism UI pass, no backend yet (fully offline-playable).
+
+Phase 2 — Backend + Leaderboard: Supabase integration, anonymous auth,
+  username claim, top-10 leaderboard for MVP mode, score validation
+  function.
+
+Phase 3 — Monetization: AdMob integration (results-screen banner +
+  capped interstitial + rewarded video), Verdict Pro subscription via
+  in_app_purchase, paywall gating on twist modes.
+
+Phase 4 — Twist Modes: SHIFT first (it's really an engine refactor that
+  the others benefit from), then BLITZ, then VAULT, then TWIN (most UI
+  work) — each shipped with its own leaderboard track.
+
+Phase 5 — Growth polish: local notifications for streak protection,
+  Product Hunt / launch push, home-screen widget (iOS/Android) for the
+  daily word teaser as a post-launch stretch goal.
+
+================================================================
+END OF SPEC
+================================================================

@@ -1,0 +1,93 @@
+import 'package:verdict_engine/verdict_engine.dart';
+
+abstract interface class LeaderboardRepository {
+  Future<List<LeaderboardEntry>> topScores(GameMode mode);
+  Future<void> submitAttempt(VerifiedAttempt attempt);
+}
+
+abstract interface class AuthService {
+  Future<String> signInAnonymously();
+}
+
+abstract interface class EntitlementService {
+  Future<bool> get hasPro;
+}
+
+abstract interface class AdService {
+  Future<void> showPostGameAd();
+}
+
+abstract interface class AnalyticsService {
+  Future<void> capture(
+    String event, [
+    Map<String, Object?> properties = const {},
+  ]);
+}
+
+abstract interface class NotificationScheduler {
+  Future<void> scheduleDailyReminder();
+  Future<void> cancelDailyReminder();
+}
+
+class LeaderboardEntry {
+  const LeaderboardEntry({required this.username, required this.score});
+
+  final String username;
+  final int score;
+}
+
+class VerifiedAttempt {
+  const VerifiedAttempt({
+    required this.puzzleId,
+    required this.mode,
+    required this.guesses,
+    required this.startedAt,
+    required this.completedAt,
+  });
+
+  final String puzzleId;
+  final GameMode mode;
+  final List<String> guesses;
+  final DateTime startedAt;
+  final DateTime completedAt;
+}
+
+class DisabledServices
+    implements
+        LeaderboardRepository,
+        AuthService,
+        EntitlementService,
+        AdService,
+        AnalyticsService,
+        NotificationScheduler {
+  const DisabledServices();
+
+  @override
+  Future<void> capture(
+    String event, [
+    Map<String, Object?> properties = const {},
+  ]) async {}
+
+  @override
+  Future<void> cancelDailyReminder() async {}
+
+  @override
+  Future<bool> get hasPro async => false;
+
+  @override
+  Future<void> scheduleDailyReminder() async {}
+
+  @override
+  Future<void> showPostGameAd() async {}
+
+  @override
+  Future<String> signInAnonymously() =>
+      Future.error(StateError('Online services are disabled.'));
+
+  @override
+  Future<void> submitAttempt(VerifiedAttempt attempt) =>
+      Future.error(StateError('Leaderboards are disabled.'));
+
+  @override
+  Future<List<LeaderboardEntry>> topScores(GameMode mode) async => const [];
+}
