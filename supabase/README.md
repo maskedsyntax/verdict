@@ -4,6 +4,10 @@ The app remains fully playable without Supabase. When configured, Phase 2 adds
 anonymous authentication, public usernames, validated score submission, and the
 Classic top-10 leaderboard.
 
+The hosted development project is `cumhjvjrdoaoehlbrkvo` in `ap-southeast-2`.
+Its database password and publishable key are stored in macOS Keychain, not in
+the repository.
+
 ## Deploy
 
 1. Create or link a Supabase project.

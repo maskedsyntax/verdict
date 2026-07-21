@@ -37,5 +37,12 @@ URL and publishable key are supplied through `--dart-define`. See
 `supabase/README.md` for deployment and security details. Without those values,
 the same build remains offline-only.
 
+The linked development project stores its publishable key in macOS Keychain.
+Run the connected app with:
+
+```sh
+./tool/run_connected.sh
+```
+
 Ads, purchases, analytics, and notifications remain disabled behind contracts
 in `lib/core/services/future_services.dart` until their roadmap phases.
