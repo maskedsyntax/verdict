@@ -62,22 +62,69 @@ void main() {
 
     expect(find.text('Ada'), findsOneWidget);
     expect(find.text('1900'), findsOneWidget);
+    await tester.ensureVisible(find.text("POST TODAY'S SCORE"));
     await tester.tap(find.text("POST TODAY'S SCORE"));
     await tester.pumpAndSettle();
 
     expect(services.submitted, isTrue);
     expect(find.text('Score posted: 1500'), findsOneWidget);
   });
+
+  testWidgets('claims a first username without disposing the field early', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
+    final services = _FakeServices(username: null);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          onlineServicesEnabledProvider.overrideWithValue(true),
+          leaderboardRepositoryProvider.overrideWithValue(services),
+          authServiceProvider.overrideWithValue(services),
+        ],
+        child: MaterialApp(home: LeaderboardSheet(game: game(won: true))),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text("POST TODAY'S SCORE"));
+    await tester.tap(find.text("POST TODAY'S SCORE"));
+    await tester.pumpAndSettle();
+    expect(find.text('CLAIM YOUR NAME'), findsOneWidget);
+
+    tester.view.viewInsets = const FakeViewPadding(bottom: 260);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'New_Player');
+    await tester.ensureVisible(find.text('CLAIM'));
+    await tester.tap(find.text('CLAIM'));
+    await tester.pumpAndSettle();
+
+    expect(services.claimedUsername, 'New_Player');
+    expect(services.submitted, isTrue);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _FakeServices implements LeaderboardRepository, AuthService {
+  _FakeServices({this.username = 'Ada'});
+
   bool submitted = false;
+  String? username;
+  String? claimedUsername;
 
   @override
-  Future<String> claimUsername(String username) async => username;
+  Future<String> claimUsername(String username) async {
+    claimedUsername = username;
+    this.username = username;
+    return username;
+  }
 
   @override
-  Future<String?> currentUsername() async => 'Ada';
+  Future<String?> currentUsername() async => username;
 
   @override
   Future<String> signInAnonymously() async => 'user-id';

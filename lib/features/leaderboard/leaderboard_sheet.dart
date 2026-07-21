@@ -98,50 +98,59 @@ class _LeaderboardSheetState extends ConsumerState<LeaderboardSheet> {
   }
 
   Future<String?> _requestUsername() {
-    final controller = TextEditingController();
+    var username = '';
     return showDialog<String>(
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
-        child: BrutalBox(
-          color: VerdictPalette.yellow,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'CLAIM YOUR NAME',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                autofocus: true,
-                maxLength: 20,
-                textInputAction: TextInputAction.done,
-                decoration: const InputDecoration(
-                  hintText: 'masked_player',
-                  filled: true,
-                  fillColor: VerdictPalette.white,
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: VerdictPalette.ink, width: 3),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: VerdictPalette.ink, width: 3),
-                  ),
+        child: SingleChildScrollView(
+          child: BrutalBox(
+            color: VerdictPalette.yellow,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'CLAIM YOUR NAME',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                onSubmitted: (value) => Navigator.pop(context, value.trim()),
-              ),
-              const SizedBox(height: 8),
-              BrutalButton(
-                label: 'CLAIM',
-                onPressed: () => Navigator.pop(context, controller.text.trim()),
-              ),
-            ],
+                const SizedBox(height: 12),
+                TextField(
+                  autofocus: true,
+                  maxLength: 20,
+                  scrollPadding: const EdgeInsets.all(80),
+                  textInputAction: TextInputAction.done,
+                  decoration: const InputDecoration(
+                    hintText: 'masked_player',
+                    filled: true,
+                    fillColor: VerdictPalette.white,
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: VerdictPalette.ink,
+                        width: 3,
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: VerdictPalette.ink,
+                        width: 3,
+                      ),
+                    ),
+                  ),
+                  onChanged: (value) => username = value.trim(),
+                  onSubmitted: (value) => Navigator.pop(context, value.trim()),
+                ),
+                const SizedBox(height: 8),
+                BrutalButton(
+                  label: 'CLAIM',
+                  onPressed: () => Navigator.pop(context, username),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ).whenComplete(controller.dispose);
+    );
   }
 
   @override
@@ -256,9 +265,16 @@ class _LeaderboardRow extends StatelessWidget {
             style: const TextStyle(fontWeight: FontWeight.w800),
           ),
         ),
-        Text(
-          '${entry.score}',
-          style: const TextStyle(fontWeight: FontWeight.w900),
+        SizedBox(
+          width: 60,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              '${entry.score}',
+              style: const TextStyle(fontWeight: FontWeight.w900),
+            ),
+          ),
         ),
       ],
     ),

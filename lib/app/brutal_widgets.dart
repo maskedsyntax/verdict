@@ -62,16 +62,19 @@ class BrutalButton extends StatelessWidget {
               BoxShadow(color: VerdictPalette.ink, offset: Offset(4, 4)),
             ],
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) ...[
-                Icon(icon, size: 20),
-                const SizedBox(width: 8),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, size: 20),
+                  const SizedBox(width: 8),
+                ],
+                Text(label, style: Theme.of(context).textTheme.labelLarge),
               ],
-              Text(label, style: Theme.of(context).textTheme.labelLarge),
-            ],
+            ),
           ),
         ),
       ),
