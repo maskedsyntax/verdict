@@ -5,7 +5,7 @@ import { loadAdsense } from '@/lib/adsense'
 
 const props = defineProps<{
   slot?: string
-  placement: 'results' | 'stats'
+  placement: 'results' | 'stats' | 'home' | 'howto'
 }>()
 
 const client = import.meta.env.VITE_ADSENSE_CLIENT

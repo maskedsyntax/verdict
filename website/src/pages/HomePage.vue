@@ -2,6 +2,10 @@
 import { ArrowRight, BellRing, Clock3, Flame, Layers3, LockKeyhole, Share2, Sparkles } from '@lucide/vue'
 import { RouterLink } from 'vue-router'
 
+import AdSlot from '@/components/AdSlot.vue'
+
+const homeAdSlot = import.meta.env.VITE_ADSENSE_HOME_SLOT
+
 const previewRows = [
   [
     { letter: 'C', grade: 'miss' }, { letter: 'R', grade: 'near' }, { letter: 'A', grade: 'miss' }, { letter: 'N', grade: 'miss' }, { letter: 'E', grade: 'hit' },
@@ -114,6 +118,10 @@ const modes = [
         </div>
       </div>
     </section>
+
+    <div class="page-wrap home-ad">
+      <AdSlot :slot="homeAdSlot" placement="home" />
+    </div>
 
     <section class="section ritual-section">
       <div class="page-wrap ritual-grid">
@@ -413,6 +421,11 @@ const modes = [
 @keyframes ticker { to { transform: translateX(-50%); } }
 
 .mechanics-section {
+  background: var(--paper);
+}
+
+.home-ad {
+  padding: 40px 0 48px;
   background: var(--paper);
 }
 

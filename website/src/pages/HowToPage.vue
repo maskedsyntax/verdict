@@ -2,6 +2,10 @@
 import { ArrowRight, CalendarDays, Keyboard, Share2 } from '@lucide/vue'
 import { RouterLink } from 'vue-router'
 
+import AdSlot from '@/components/AdSlot.vue'
+
+const howtoAdSlot = import.meta.env.VITE_ADSENSE_HOWTO_SLOT
+
 const examples = [
   { word: 'SLATE', highlight: 0, grade: 'hit', title: 'S is in the right spot', copy: 'A green tile is final. Keep that letter exactly where it is.' },
   { word: 'BRICK', highlight: 1, grade: 'near', title: 'R is in the word', copy: 'A yellow tile belongs in the answer, but not in that position.' },
@@ -51,6 +55,8 @@ const examples = [
         <p>Today’s case is open now.</p>
         <RouterLink class="button button--ink" to="/play">Play Verdict <ArrowRight :size="20" /></RouterLink>
       </section>
+
+      <AdSlot :slot="howtoAdSlot" placement="howto" />
     </div>
   </div>
 </template>

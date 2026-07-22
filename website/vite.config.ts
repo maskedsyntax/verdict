@@ -1,3 +1,4 @@
+import { copyFileSync } from 'node:fs'
 import { fileURLToPath, URL } from 'node:url'
 
 import vue from '@vitejs/plugin-vue'
@@ -20,6 +21,13 @@ export default defineConfig(({ mode }) => {
             fileName: 'ads.txt',
             source: `google.com, ${publisherId}, DIRECT, f08c47fec0942fa0\n`,
           })
+        },
+      },
+      {
+        name: 'verdict-spa-fallback',
+        writeBundle() {
+          const dist = fileURLToPath(new URL('./dist', import.meta.url))
+          copyFileSync(`${dist}/index.html`, `${dist}/404.html`)
         },
       },
     ],
