@@ -139,15 +139,13 @@ p {
 }
 
 .wordmark-mark {
-  display: grid;
+  display: block;
   width: 42px;
   height: 42px;
-  place-items: center;
   border: var(--border);
-  background: var(--yellow);
+  background: var(--white);
   box-shadow: 3px 3px 0 var(--ink);
-  font-size: 1.35rem;
-  line-height: 1;
+  object-fit: cover;
 }
 
 .main-nav {

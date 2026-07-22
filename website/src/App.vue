@@ -17,7 +17,7 @@ watch(() => route.fullPath, () => {
     <header class="site-header">
       <div class="nav-wrap">
         <RouterLink class="wordmark" to="/" aria-label="Verdict home">
-          <span class="wordmark-mark">V</span>
+          <img class="wordmark-mark" src="/logo.png" alt="" width="42" height="42" />
           <span>VERDICT</span>
         </RouterLink>
 
@@ -48,7 +48,7 @@ watch(() => route.fullPath, () => {
       <div class="footer-grid">
         <div>
           <RouterLink class="wordmark wordmark--footer" to="/">
-            <span class="wordmark-mark">V</span>
+            <img class="wordmark-mark" src="/logo.png" alt="" width="42" height="42" />
             <span>VERDICT</span>
           </RouterLink>
           <p>Six guesses. One verdict.<br />A fresh word lands every day at midnight UTC.</p>
