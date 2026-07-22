@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:verdict/app/brutal_widgets.dart';
 import 'package:verdict/app/verdict_theme.dart';
+import 'package:verdict/core/services/service_providers.dart';
 import 'package:verdict/features/game/game_controller.dart';
 import 'package:verdict/features/game/game_grid.dart';
 import 'package:verdict/features/game/game_keyboard.dart';
@@ -11,6 +12,7 @@ import 'package:verdict/features/leaderboard/leaderboard_sheet.dart';
 import 'package:verdict/features/results/result_panel.dart';
 import 'package:verdict/features/settings/settings_sheet.dart';
 import 'package:verdict/features/stats/stats_sheet.dart';
+import 'package:verdict_engine/verdict_engine.dart';
 
 class GameScreen extends ConsumerStatefulWidget {
   const GameScreen({super.key});
@@ -32,6 +34,10 @@ class _GameScreenState extends ConsumerState<GameScreen> {
   Widget build(BuildContext context) {
     final game = ref.watch(gameControllerProvider);
     final controller = ref.read(gameControllerProvider.notifier);
+    final adService = ref.watch(adServiceProvider);
+    final hintText = game.revealedHints.isEmpty
+        ? null
+        : 'HINT: WORD CONTAINS ${game.revealedHints.map((letter) => letter.toUpperCase()).join(', ')}';
     return Focus(
       focusNode: _focusNode,
       autofocus: true,
@@ -73,29 +79,35 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                       SettingsSheet(
                         settings: game.settings,
                         onHighContrastChanged: controller.setHighContrast,
+                        onStreakReminderChanged: controller.setStreakReminder,
+                        onAdPrivacy: adService.isEnabled
+                            ? () => _showAdPrivacy(context)
+                            : null,
                       ),
                     ),
                   ),
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 180),
-                    child: game.errorMessage == null
+                    child: game.errorMessage == null && hintText == null
                         ? const SizedBox(height: 38)
                         : Padding(
-                            key: ValueKey(game.errorMessage),
+                            key: ValueKey(game.errorMessage ?? hintText),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Container(
                               width: double.infinity,
                               height: 38,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                color: VerdictPalette.pink,
+                                color: game.errorMessage == null
+                                    ? VerdictPalette.yellow
+                                    : VerdictPalette.pink,
                                 border: Border.all(
                                   color: VerdictPalette.ink,
                                   width: 2.5,
                                 ),
                               ),
                               child: Text(
-                                game.errorMessage!,
+                                game.errorMessage ?? hintText!,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w900,
                                 ),
@@ -138,6 +150,20 @@ class _GameScreenState extends ConsumerState<GameScreen> {
                       ),
                     ),
                   ),
+                  if (game.session.status == GameStatus.active &&
+                      adService.isEnabled)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 2, 16, 3),
+                      child: SizedBox(
+                        height: 38,
+                        child: BrutalButton(
+                          label: 'WATCH FOR A LETTER HINT',
+                          icon: Icons.lightbulb_outline,
+                          color: VerdictPalette.yellow,
+                          onPressed: () => _showRewardedHint(context),
+                        ),
+                      ),
+                    ),
                   SizedBox(
                     height: 190,
                     child: GameKeyboard(
@@ -179,6 +205,28 @@ class _GameScreenState extends ConsumerState<GameScreen> {
     await Future<void>.delayed(Duration.zero);
     if (mounted) {
       await _showSheet(this.context, LeaderboardSheet(game: game));
+    }
+  }
+
+  Future<void> _showRewardedHint(BuildContext context) async {
+    final earned = await ref.read(adServiceProvider).showRewardedHint(() async {
+      await ref.read(gameControllerProvider.notifier).revealHint();
+    });
+    if (!earned && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No hint earned. Try again shortly.')),
+      );
+    }
+  }
+
+  Future<void> _showAdPrivacy(BuildContext context) async {
+    final shown = await ref.read(adServiceProvider).showPrivacyOptions();
+    if (!shown && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No additional privacy form is required here.'),
+        ),
+      );
     }
   }
 }

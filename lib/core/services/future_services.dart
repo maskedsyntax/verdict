@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:verdict_engine/verdict_engine.dart';
 
 abstract interface class LeaderboardRepository {
@@ -16,7 +18,12 @@ abstract interface class EntitlementService {
 }
 
 abstract interface class AdService {
+  bool get isEnabled;
+  Future<bool> initialize();
   Future<void> showPostGameAd();
+  Future<bool> showRewardedHint(FutureOr<void> Function() onReward);
+  Future<bool> showPrivacyOptions();
+  void dispose();
 }
 
 abstract interface class AnalyticsService {
@@ -77,10 +84,26 @@ class DisabledServices
   Future<bool> get hasPro async => false;
 
   @override
+  bool get isEnabled => false;
+
+  @override
+  Future<bool> initialize() async => false;
+
+  @override
   Future<void> scheduleDailyReminder() async {}
 
   @override
   Future<void> showPostGameAd() async {}
+
+  @override
+  Future<bool> showPrivacyOptions() async => false;
+
+  @override
+  Future<bool> showRewardedHint(FutureOr<void> Function() onReward) async =>
+      false;
+
+  @override
+  void dispose() {}
 
   @override
   Future<String> claimUsername(String username) =>

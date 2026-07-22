@@ -44,5 +44,22 @@ Run the connected app with:
 ./tool/run_connected.sh
 ```
 
-Ads, purchases, analytics, and notifications remain disabled behind contracts
-in `lib/core/services/future_services.dart` until their roadmap phases.
+## Optional Ads
+
+Debug builds use Google's official test IDs for results/stats banners, one
+post-game interstitial per session, and opt-in rewarded letter hints. UMP consent
+gates every ad request. Release ads remain disabled unless all production IDs
+are supplied:
+
+```sh
+flutter run \
+  --dart-define=ADMOB_ANDROID_APP_ID=YOUR_ANDROID_APP_ID \
+  --dart-define=ADMOB_BANNER_UNIT_ID=YOUR_BANNER_UNIT_ID \
+  --dart-define=ADMOB_INTERSTITIAL_UNIT_ID=YOUR_INTERSTITIAL_UNIT_ID \
+  --dart-define=ADMOB_REWARDED_UNIT_ID=YOUR_REWARDED_UNIT_ID
+```
+
+For Android release builds, also export `ADMOB_ANDROID_APP_ID`. For iOS, replace
+the test `ADMOB_APP_ID` in `ios/Flutter/Release.xcconfig` and supply
+`ADMOB_IOS_APP_ID` as a Dart define. Missing or Google test IDs disable release
+ad requests. Purchases and analytics remain disabled behind service contracts.

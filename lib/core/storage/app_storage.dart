@@ -10,11 +10,15 @@ class StoredAppState {
     this.session,
     this.stats = const PlayerStats(),
     this.settings = const AppSettings(),
+    this.hintPuzzleId,
+    this.revealedHints = const {},
   });
 
   final GameSession? session;
   final PlayerStats stats;
   final AppSettings settings;
+  final String? hintPuzzleId;
+  final Set<String> revealedHints;
 }
 
 class AppStorage {
@@ -40,6 +44,10 @@ class AppStorage {
         settings: AppSettings.fromJson(
           Map<String, Object?>.from((json['settings'] as Map?) ?? const {}),
         ),
+        hintPuzzleId: json['hintPuzzleId'] as String?,
+        revealedHints: Set<String>.from(
+          (json['revealedHints'] as List?) ?? const [],
+        ),
       );
     } on Object {
       return const StoredAppState();
@@ -50,6 +58,8 @@ class AppStorage {
     required GameSession session,
     required PlayerStats stats,
     required AppSettings settings,
+    String? hintPuzzleId,
+    Set<String> revealedHints = const {},
   }) => _preferences.setString(
     _stateKey,
     jsonEncode({
@@ -57,6 +67,8 @@ class AppStorage {
       'session': session.toJson(),
       'stats': stats.toJson(),
       'settings': settings.toJson(),
+      'hintPuzzleId': hintPuzzleId,
+      'revealedHints': revealedHints.toList(),
     }),
   );
 }

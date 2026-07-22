@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:verdict/core/services/service_providers.dart';
 import 'package:verdict/core/storage/app_storage.dart';
 import 'package:verdict/core/words/word_repository.dart';
 import 'package:verdict/features/settings/app_settings.dart';
@@ -28,6 +31,7 @@ class GameViewState {
     this.draft = '',
     this.errorMessage,
     this.resultVisible = false,
+    this.revealedHints = const {},
   });
 
   final DailyPuzzle puzzle;
@@ -37,6 +41,7 @@ class GameViewState {
   final String draft;
   final String? errorMessage;
   final bool resultVisible;
+  final Set<String> revealedHints;
 
   GameViewState copyWith({
     GameSession? session,
@@ -46,6 +51,7 @@ class GameViewState {
     String? errorMessage,
     bool clearError = false,
     bool? resultVisible,
+    Set<String>? revealedHints,
   }) => GameViewState(
     puzzle: puzzle,
     session: session ?? this.session,
@@ -54,6 +60,7 @@ class GameViewState {
     draft: draft ?? this.draft,
     errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
     resultVisible: resultVisible ?? this.resultVisible,
+    revealedHints: revealedHints ?? this.revealedHints,
   );
 }
 
@@ -77,13 +84,18 @@ class GameController extends Notifier<GameViewState> {
             config: const GameConfig.classic(),
             targets: puzzle.answers,
           );
-    return GameViewState(
+    final state = GameViewState(
       puzzle: puzzle,
       session: session,
       stats: stored.stats.asOf(puzzle.utcDate),
       settings: stored.settings,
       resultVisible: session.status != GameStatus.active,
+      revealedHints: stored.hintPuzzleId == puzzle.id
+          ? stored.revealedHints
+          : const {},
     );
+    _syncReminder(state);
+    return state;
   }
 
   void addLetter(String letter) {
@@ -122,6 +134,10 @@ class GameController extends Notifier<GameViewState> {
         resultVisible: completed,
       );
       await _persist();
+      _syncReminder(state);
+      if (completed) {
+        unawaited(ref.read(adServiceProvider).showPostGameAd());
+      }
       return true;
     } on SubmissionException catch (error) {
       state = state.copyWith(errorMessage: _messageFor(error));
@@ -136,6 +152,30 @@ class GameController extends Notifier<GameViewState> {
     await _persist();
   }
 
+  Future<void> setStreakReminder(bool enabled) async {
+    state = state.copyWith(
+      settings: state.settings.copyWith(streakReminder: enabled),
+    );
+    await _persist();
+    _syncReminder(state);
+  }
+
+  Future<void> revealHint() async {
+    if (state.session.status != GameStatus.active) return;
+    final available = state.session.targets.first
+        .split('')
+        .where((letter) => !state.revealedHints.contains(letter));
+    if (available.isEmpty) return;
+    state = state.copyWith(
+      revealedHints: Set.unmodifiable({
+        ...state.revealedHints,
+        available.first,
+      }),
+      clearError: true,
+    );
+    await _persist();
+  }
+
   void dismissError() => state = state.copyWith(clearError: true);
 
   void closeResult() => state = state.copyWith(resultVisible: false);
@@ -144,7 +184,22 @@ class GameController extends Notifier<GameViewState> {
     session: state.session,
     stats: state.stats,
     settings: state.settings,
+    hintPuzzleId: state.puzzle.id,
+    revealedHints: state.revealedHints,
   );
+
+  void _syncReminder(GameViewState viewState) {
+    final shouldRemind =
+        viewState.settings.streakReminder &&
+        viewState.session.status == GameStatus.active &&
+        viewState.stats.currentStreak > 0;
+    final scheduler = ref.read(notificationSchedulerProvider);
+    if (shouldRemind) {
+      unawaited(scheduler.scheduleDailyReminder());
+    } else {
+      unawaited(scheduler.cancelDailyReminder());
+    }
+  }
 
   String _messageFor(SubmissionException exception) =>
       switch (exception.error) {

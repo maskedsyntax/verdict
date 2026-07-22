@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:verdict/app/brutal_widgets.dart';
 import 'package:verdict/app/verdict_theme.dart';
+import 'package:verdict/features/ads/banner_ad_slot.dart';
 import 'package:verdict/features/game/game_controller.dart';
 import 'package:verdict/features/results/share_result.dart';
 import 'package:verdict_engine/verdict_engine.dart';
@@ -101,6 +102,8 @@ class ResultPanel extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
+                  const SizedBox(height: 16),
+                  const BannerAdSlot(),
                 ],
               ),
             ),

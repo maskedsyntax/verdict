@@ -13,10 +13,10 @@ const contactEmail = import.meta.env.VITE_CONTACT_EMAIL
 
       <article class="prose surface">
         <h2>Information stored on your device</h2>
-        <p>Verdict stores your current puzzle, completed guesses, statistics, and streak in your browser’s local storage. This information remains on your device and lets you resume a game or view your record. Clearing site data removes it.</p>
+        <p>Verdict stores your current puzzle, completed guesses, statistics, settings, and streak locally on your device. This information lets you resume a game or view your record. Clearing the app or site data removes it.</p>
 
         <h2>Advertising</h2>
-        <p>We may use Google AdSense to display advertisements on completed-game results and statistics pages. Google and its partners may use cookies or similar technologies to serve, measure, and personalize advertisements where permitted.</p>
+        <p>We may use Google AdMob in the mobile app and Google AdSense on the website to display advertisements on completed-game results and statistics pages. Google and its partners may process device identifiers, approximate location, diagnostics, and ad interactions to serve and measure advertisements where permitted.</p>
         <p>Where required, a Google-certified consent management platform will ask for your choices before personalized advertising technologies are used. You can revisit those choices through the privacy controls presented by that platform.</p>
 
         <h2>What we do not collect</h2>

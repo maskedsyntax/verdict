@@ -6,11 +6,15 @@ class SettingsSheet extends StatefulWidget {
   const SettingsSheet({
     required this.settings,
     required this.onHighContrastChanged,
+    required this.onStreakReminderChanged,
+    this.onAdPrivacy,
     super.key,
   });
 
   final AppSettings settings;
   final ValueChanged<bool> onHighContrastChanged;
+  final ValueChanged<bool> onStreakReminderChanged;
+  final VoidCallback? onAdPrivacy;
 
   @override
   State<SettingsSheet> createState() => _SettingsSheetState();
@@ -18,6 +22,7 @@ class SettingsSheet extends StatefulWidget {
 
 class _SettingsSheetState extends State<SettingsSheet> {
   late bool _highContrast = widget.settings.highContrast;
+  late bool _streakReminder = widget.settings.streakReminder;
 
   @override
   Widget build(BuildContext context) => SafeArea(
@@ -53,6 +58,30 @@ class _SettingsSheetState extends State<SettingsSheet> {
               onChanged: (enabled) {
                 setState(() => _highContrast = enabled);
                 widget.onHighContrastChanged(enabled);
+              },
+            ),
+            if (widget.onAdPrivacy != null)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text(
+                  'AD PRIVACY',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
+                subtitle: const Text('Review advertising consent choices'),
+                trailing: const Icon(Icons.privacy_tip_outlined),
+                onTap: widget.onAdPrivacy,
+              ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text(
+                'STREAK REMINDER',
+                style: TextStyle(fontWeight: FontWeight.w900),
+              ),
+              subtitle: const Text('Notify me before today\'s puzzle expires'),
+              value: _streakReminder,
+              onChanged: (enabled) {
+                setState(() => _streakReminder = enabled);
+                widget.onStreakReminderChanged(enabled);
               },
             ),
           ],

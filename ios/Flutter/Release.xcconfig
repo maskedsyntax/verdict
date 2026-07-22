@@ -1,1 +1,3 @@
 #include "Generated.xcconfig"
+// Replace with the production iOS AdMob App ID for monetized release builds.
+ADMOB_APP_ID=ca-app-pub-3940256099942544~1458002511

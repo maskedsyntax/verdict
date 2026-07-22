@@ -19,13 +19,14 @@ void main() {
     await storage.save(
       session: session,
       stats: const PlayerStats(gamesPlayed: 4, wins: 3),
-      settings: const AppSettings(highContrast: true),
+      settings: const AppSettings(highContrast: true, streakReminder: false),
     );
     final restored = storage.load();
 
     expect(restored.session?.guesses, ['cider']);
     expect(restored.stats.gamesPlayed, 4);
     expect(restored.settings.highContrast, isTrue);
+    expect(restored.settings.streakReminder, isFalse);
   });
 
   test('ignores a corrupt snapshot', () async {
