@@ -64,7 +64,7 @@ class AdMobConfig {
 
   static const testAndroid = AdMobConfig(
     appId: 'ca-app-pub-3940256099942544~3347511713',
-    bannerAdUnitId: 'ca-app-pub-3940256099942544/6300978111',
+    bannerAdUnitId: 'ca-app-pub-3940256099942544/9214589741',
     interstitialAdUnitId: 'ca-app-pub-3940256099942544/1033173712',
     rewardedAdUnitId: 'ca-app-pub-3940256099942544/5224354917',
     isConfigured: true,
@@ -72,7 +72,7 @@ class AdMobConfig {
 
   static const testIos = AdMobConfig(
     appId: 'ca-app-pub-3940256099942544~1458002511',
-    bannerAdUnitId: 'ca-app-pub-3940256099942544/2934735716',
+    bannerAdUnitId: 'ca-app-pub-3940256099942544/2435281174',
     interstitialAdUnitId: 'ca-app-pub-3940256099942544/4411468910',
     rewardedAdUnitId: 'ca-app-pub-3940256099942544/1712485313',
     isConfigured: true,
@@ -83,4 +83,6 @@ class AdMobConfig {
   final String interstitialAdUnitId;
   final String rewardedAdUnitId;
   final bool isConfigured;
+
+  bool get isTestConfiguration => appId.contains(_googleTestPublisherId);
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:verdict/core/services/admob_config.dart';
 import 'package:verdict/core/services/future_services.dart';
@@ -14,6 +15,8 @@ class AdMobAdService implements AdService {
   bool _sdkInitialized = false;
   bool _shownThisSession = false;
   bool _disposed = false;
+  int _interstitialLoadAttempts = 0;
+  int _rewardedLoadAttempts = 0;
 
   @override
   bool get isEnabled => _config.isConfigured && !_disposed;
@@ -28,17 +31,28 @@ class AdMobAdService implements AdService {
     ConsentInformation.instance.requestConsentInfoUpdate(
       ConsentRequestParameters(),
       () async {
-        await ConsentForm.loadAndShowConsentFormIfRequired((_) {});
+        await ConsentForm.loadAndShowConsentFormIfRequired((error) {
+          if (error != null) _debugLog('Consent form: $error');
+        });
         completer.complete(await _initializeIfAllowed());
       },
-      (_) async => completer.complete(await _initializeIfAllowed()),
+      (error) async {
+        _debugLog('Consent update: $error');
+        completer.complete(await _initializeIfAllowed());
+      },
     );
     return completer.future;
   }
 
   Future<bool> _initializeIfAllowed() async {
-    if (_disposed || !await ConsentInformation.instance.canRequestAds()) {
+    final canRequestAds = await ConsentInformation.instance.canRequestAds();
+    final allowTestAds = _config.isTestConfiguration && kDebugMode;
+    if (_disposed || (!canRequestAds && !allowTestAds)) {
+      _debugLog('Ads blocked until consent allows requests.');
       return false;
+    }
+    if (!canRequestAds && allowTestAds) {
+      _debugLog('Using debug-only Google test ads after consent setup error.');
     }
     if (!_sdkInitialized) {
       await MobileAds.instance.initialize();
@@ -56,13 +70,20 @@ class AdMobAdService implements AdService {
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
+          _interstitialLoadAttempts = 0;
           if (_disposed) {
             ad.dispose();
           } else {
             _interstitialAd = ad;
           }
         },
-        onAdFailedToLoad: (_) => _interstitialAd = null,
+        onAdFailedToLoad: (error) {
+          _debugLog('Interstitial load failed: $error');
+          _interstitialAd = null;
+          if (++_interstitialLoadAttempts < 3) {
+            Future<void>.delayed(const Duration(seconds: 3), _loadInterstitial);
+          }
+        },
       ),
     );
   }
@@ -74,13 +95,20 @@ class AdMobAdService implements AdService {
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
+          _rewardedLoadAttempts = 0;
           if (_disposed) {
             ad.dispose();
           } else {
             _rewardedAd = ad;
           }
         },
-        onAdFailedToLoad: (_) => _rewardedAd = null,
+        onAdFailedToLoad: (error) {
+          _debugLog('Rewarded load failed: $error');
+          _rewardedAd = null;
+          if (++_rewardedLoadAttempts < 3) {
+            Future<void>.delayed(const Duration(seconds: 3), _loadRewarded);
+          }
+        },
       ),
     );
   }
@@ -161,5 +189,9 @@ class AdMobAdService implements AdService {
     _rewardedAd?.dispose();
     _interstitialAd = null;
     _rewardedAd = null;
+  }
+
+  void _debugLog(String message) {
+    if (kDebugMode) debugPrint('AdMob: $message');
   }
 }
