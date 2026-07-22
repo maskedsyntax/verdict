@@ -8,7 +8,7 @@ export function loadAdsense(): Promise<void> {
   scriptPromise = new Promise((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>('script[data-verdict-adsense]')
     if (existing) {
-      if (existing.dataset.loaded === 'true') resolve()
+      if (existing.dataset.loaded === 'true' || window.adsbygoogle) resolve()
       else existing.addEventListener('load', () => resolve(), { once: true })
       return
     }

@@ -13,6 +13,24 @@ export default defineConfig(({ mode }) => {
     plugins: [
       vue(),
       {
+        name: 'verdict-adsense-script',
+        transformIndexHtml() {
+          if (!env.VITE_ADSENSE_CLIENT) return
+          return [
+            {
+              tag: 'script',
+              attrs: {
+                async: true,
+                crossorigin: 'anonymous',
+                'data-verdict-adsense': '',
+                src: `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${env.VITE_ADSENSE_CLIENT}`,
+              },
+              injectTo: 'head',
+            },
+          ]
+        },
+      },
+      {
         name: 'verdict-ads-txt',
         generateBundle() {
           if (!publisherId) return
